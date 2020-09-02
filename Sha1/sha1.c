@@ -1,5 +1,7 @@
 #include "sha1.h"
 
+#include <string.h>
+
 static void sha1_ctx_process(sha1_context_t* ctx);
 static void set_word(uint32_t h, uint8_t * o)
 {
@@ -70,10 +72,13 @@ void sha1_ctx_update(sha1_context_t* restrict ctx, void * restrict data, size_t 
 	if (ctx->index + size >= 64) {
 		if (ctx->index > 0) {
 			size_t diff = 64 - ctx->index;
-			for (size_t i = 0; i != diff; ++i) {
-				bytes[ctx->index++] = *d++;
-			}
+			
+			memcpy(bytes, d, diff);
+			
+			ctx->index += diff;
+			
 			size -= diff;
+
 			sha1_ctx_process(ctx);
 		}
 
@@ -82,78 +87,7 @@ void sha1_ctx_update(sha1_context_t* restrict ctx, void * restrict data, size_t 
 		size_t number = size >> 6; /* size / 64  */
 		for (size_t i = 0; i != number; ++i) 
 		{
-			bytes[0] = d[0];
-			bytes[1] = d[1];
-			bytes[2] = d[2];
-			bytes[3] = d[3];
-			bytes[4] = d[4];
-			bytes[5] = d[5];
-			bytes[6] = d[6];
-			bytes[7] = d[7];
-
-			bytes[8] = d[8];
-			bytes[9] = d[9];
-			bytes[10] = d[10];
-			bytes[11] = d[11];
-			bytes[12] = d[12];
-			bytes[13] = d[13];
-			bytes[14] = d[14];
-			bytes[15] = d[15];
-
-			bytes[16] = d[16];
-			bytes[17] = d[17];
-			bytes[18] = d[18];
-			bytes[19] = d[19];
-			bytes[20] = d[20];
-			bytes[21] = d[21];
-			bytes[22] = d[22];
-			bytes[23] = d[23];
-
-			bytes[24] = d[24];
-			bytes[25] = d[25];
-			bytes[26] = d[26];
-			bytes[27] = d[27];
-			bytes[28] = d[28];
-			bytes[29] = d[29];
-			bytes[30] = d[30];
-			bytes[31] = d[31];
-
-			bytes[32] = d[32];
-			bytes[33] = d[33];
-			bytes[34] = d[34];
-			bytes[35] = d[35];
-			bytes[36] = d[36];
-			bytes[37] = d[37];
-			bytes[38] = d[38];
-			bytes[39] = d[39];
-
-			bytes[40] = d[40];
-			bytes[41] = d[41];
-			bytes[42] = d[42];
-			bytes[43] = d[43];
-			bytes[44] = d[44];
-			bytes[45] = d[45];
-			bytes[46] = d[46];
-			bytes[47] = d[47];
-
-			bytes[48] = d[48];
-			bytes[49] = d[49];
-			bytes[50] = d[50];
-			bytes[51] = d[51];
-			bytes[52] = d[52];
-			bytes[53] = d[53];
-			bytes[54] = d[54];
-			bytes[55] = d[55];
-
-			bytes[56] = d[56];
-			bytes[57] = d[57];
-			bytes[58] = d[58];
-			bytes[59] = d[59];
-			bytes[60] = d[60];
-			bytes[61] = d[61];
-			bytes[62] = d[62];
-			bytes[63] = d[63];
-
+			memcpy(bytes, d, 64);
 			sha1_ctx_process(ctx);
 
 			d += 64;
@@ -162,10 +96,9 @@ void sha1_ctx_update(sha1_context_t* restrict ctx, void * restrict data, size_t 
 		size &= 63;
 	}
 
-	while (size > 0) {
-		bytes[ctx->index++] = *d++;
-		--size;
-	}
+	if (size)
+		memcpy(bytes, d, size);
+	ctx->index += size;
 }
 
 static uint32_t rol_1(uint32_t value) 

@@ -7,7 +7,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <time.h>
 
 static const size_t PAGE_SIZE = 8192 * 64;
 
@@ -18,6 +18,7 @@ int main(int argc, char* argv[])
 	FILE* file;
 	sha1_context_t ctx;
 	uint8_t bytes[20];
+	clock_t begin = clock() , end;
 
 	if (argc != 2) {
 		fprintf(stderr, "USAGE: %s <filename>\n", argv[0]);
@@ -60,7 +61,7 @@ int main(int argc, char* argv[])
 	sha1_ctx_finish(&ctx);
 	
 	sha1_ctx_result(&ctx, bytes);
-
+	end = clock();
 	printf("digest (sha1) of `%s` file: ", filename);
 
 	for (size_t i = 0; i < 20; ++i) {
@@ -69,6 +70,7 @@ int main(int argc, char* argv[])
 	}
 	
 	printf("\n");
-
+	double elapsed_secs = (double)(end - begin) / CLOCKS_PER_SEC;
+	printf("elapsed %.7f seconds\n", elapsed_secs);
 	return 0;
 }
